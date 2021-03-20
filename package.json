@@ -1,0 +1,29 @@
+{
+  "name": "intl-msgs-defaults",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trassmann/intl-msgs-defaults.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/trassmann/intl-msgs-defaults/issues"
+  },
+  "homepage": "https://github.com/trassmann/intl-msgs-defaults#readme",
+  "dependencies": {
+    "@babel/generator": "^7.13.9",
+    "@babel/parser": "^7.13.11",
+    "@babel/traverse": "^7.13.0",
+    "@babel/types": "^7.13.0",
+    "commander": "^7.1.0",
+    "fast-glob": "^3.2.5"
+  }
+}
