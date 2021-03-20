@@ -1,0 +1,1 @@
+# intl-msgs-defaults
