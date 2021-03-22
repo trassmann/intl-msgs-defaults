@@ -1,6 +1,4 @@
-import * as types from "@babel/types";
-
-const t = types.default;
+import * as t from "@babel/types";
 
 export const DEFAULT_DEFAULT_MESSAGE = "@TODO";
 

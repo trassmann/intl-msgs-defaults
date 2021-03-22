@@ -2,10 +2,11 @@
   "name": "intl-msgs-defaults",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
-  "type": "module",
+  "bin": "bin/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx babel src --out-dir bin",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -25,5 +26,13 @@
     "@babel/types": "^7.13.0",
     "commander": "^7.1.0",
     "fast-glob": "^3.2.5"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.10",
+    "@babel/core": "^7.13.10",
+    "@babel/preset-env": "^7.13.12"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   }
 }
