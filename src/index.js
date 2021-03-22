@@ -38,8 +38,7 @@ const defaultMessages = JSON.parse(sourceFileContent);
 sourceFileHandle.close();
 
 for (const targetFile of targetFiles) {
-  const targetFileHandle = await fs.open(targetFile, "r+");
-  const code = await targetFileHandle.readFile({ encoding: "utf8" });
+  const code = await fs.readFile(targetFile, "utf8");
   const ast = parser.parse(code, {
     sourceType: "module",
     plugins: ["jsx"],
@@ -76,10 +75,12 @@ for (const targetFile of targetFiles) {
     },
   });
 
-  const output = generate(ast, {});
+  const output = generate(ast, {
+    retainLines: true,
+    retainFunctionParens: true,
+  });
 
-  await targetFileHandle.write(output.code, 0, "utf8");
-  await targetFileHandle.close();
+  await fs.writeFile(targetFile, output.code, "utf8");
 
   console.log(targetFile, "done");
 }

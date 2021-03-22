@@ -22,18 +22,25 @@ export const getDefaultMessageJSXAttribute = (path) => {
 
 export const insertDefaultMessageProperty = ({ path, defaultMessages }) => {
   const [firstArg] = path.get("arguments");
-  const idProperty = firstArg.node.properties.find(
-    (property) => property.key.name === "id"
+
+  const defaultMessageProperty = firstArg.node.properties.find(
+    (property) => property.key.name === "defaultMessage"
   );
 
-  const defaultMessage =
-    defaultMessages[idProperty.value.value] || DEFAULT_DEFAULT_MESSAGE;
+  if (!defaultMessageProperty) {
+    const idProperty = firstArg.node.properties.find(
+      (property) => property.key.name === "id"
+    );
 
-  firstArg.pushContainer(
-    "properties",
-    t.objectProperty(
-      t.identifier("defaultMessage"),
-      t.stringLiteral(defaultMessage)
-    )
-  );
+    const defaultMessage =
+      defaultMessages[idProperty.value.value] || DEFAULT_DEFAULT_MESSAGE;
+
+    firstArg.pushContainer(
+      "properties",
+      t.objectProperty(
+        t.identifier("defaultMessage"),
+        t.stringLiteral(defaultMessage)
+      )
+    );
+  }
 };
