@@ -40,5 +40,9 @@ export const insertDefaultMessageProperty = ({ path, defaultMessages }) => {
         t.stringLiteral(defaultMessage)
       )
     );
+
+    return true;
   }
+
+  return false;
 };
