@@ -1,5 +1,11 @@
 # intl-msgs-defaults
 
+# Installation
+
+```js
+npm install --save-dev intl-msgs-defaults
+```
+
 Automatically applies `defaultMessage` prop and property for `formatMessage({ id: "...", })` and `<FormattedMessage id="..." />` calls from a source file.
 
 Consider this source code:
@@ -50,22 +56,17 @@ export const TestFunc = () => {
 };
 ```
 
-# Installation
-
-```js
-npm install --save-dev intl-msgs-defaults
-```
-
 # Usage
 
 ```
 Usage: intl-msgs-defaults [options]
 
 Options:
-  -V, --version        output the version number
-  -s, --source <file>  .json file with the default messages
-  -t, --target <glob>  glob pattern for target files
-  -h, --help           display help for command
+  -V, --version            output the version number
+  -s, --source <file>      .json file with the default messages
+  -t, --target <glob>      glob pattern for target files
+  -p, --prettify [config]  whether to prettify output, with optional config file (default: true)
+  -h, --help               display help for command
 ```
 
 # Behaviour
