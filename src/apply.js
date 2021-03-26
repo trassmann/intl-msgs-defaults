@@ -31,6 +31,8 @@ export default async (options) => {
       plugins: ["jsx", "classProperties"],
     });
 
+    let writeChanges = false;
+
     traverse(ast, {
       JSXOpeningElement: (path) => {
         if (t.isJSXIdentifier(path.node.name, { name: "FormattedMessage" })) {
@@ -51,6 +53,8 @@ export default async (options) => {
                       t.stringLiteral(defaultMessage)
                     )
                   );
+
+                  writeChanges = true;
                 }
               },
             });
@@ -59,18 +63,23 @@ export default async (options) => {
       },
       CallExpression: (path) => {
         if (isFormatMessageCall({ callee: path.node.callee })) {
-          insertDefaultMessageProperty({ path, defaultMessages });
+          writeChanges = insertDefaultMessageProperty({
+            path,
+            defaultMessages,
+          });
         }
       },
     });
 
-    const output = generate(ast, {
-      retainLines: true,
-      retainFunctionParens: true,
-    });
+    if (writeChanges) {
+      const output = generate(ast, {
+        retainLines: true,
+        retainFunctionParens: true,
+      });
 
-    await fs.writeFile(targetFile, output.code, "utf8");
+      await fs.writeFile(targetFile, output.code, "utf8");
 
-    console.log(targetFile, "done");
+      console.log(targetFile, "done");
+    }
   }
 };
