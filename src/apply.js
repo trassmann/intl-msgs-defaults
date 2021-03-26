@@ -4,6 +4,7 @@ import * as parser from "@babel/parser";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
+import prettier from "prettier";
 
 import {
   isFormatMessageCall,
@@ -13,7 +14,7 @@ import {
 } from "./helpers";
 
 export default async (options) => {
-  const { source: sourceFilepath, target: targetGlob } = options;
+  const { source: sourceFilepath, target: targetGlob, prettify } = options;
 
   const targetFiles = await fg([targetGlob]);
 
@@ -23,6 +24,13 @@ export default async (options) => {
   });
   const defaultMessages = JSON.parse(sourceFileContent);
   sourceFileHandle.close();
+
+  let prettierConfig;
+  if (prettify !== false) {
+    prettierConfig = await prettier.resolveConfig(
+      prettify === true ? targetFiles[0] : prettify
+    );
+  }
 
   for (const targetFile of targetFiles) {
     const code = await fs.readFile(targetFile, "utf8");
@@ -72,12 +80,19 @@ export default async (options) => {
     });
 
     if (writeChanges) {
-      const output = generate(ast, {
+      let { code: output } = generate(ast, {
         retainLines: true,
         retainFunctionParens: true,
       });
 
-      await fs.writeFile(targetFile, output.code, "utf8");
+      if (prettify) {
+        output = prettier.format(output, {
+          parser: "babel",
+          ...prettierConfig,
+        });
+      }
+
+      await fs.writeFile(targetFile, output, "utf8");
 
       console.log(targetFile, "done");
     }
