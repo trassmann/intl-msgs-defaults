@@ -28,7 +28,7 @@ export default async (options) => {
     const code = await fs.readFile(targetFile, "utf8");
     const ast = parser.parse(code, {
       sourceType: "module",
-      plugins: ["jsx"],
+      plugins: ["jsx", "classProperties"],
     });
 
     traverse(ast, {
