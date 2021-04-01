@@ -10,11 +10,15 @@ import {
   isFormatMessageCall,
   insertDefaultMessageProperty,
   getDefaultMessageJSXAttribute,
-  DEFAULT_DEFAULT_MESSAGE,
 } from "./helpers";
 
 export default async (options) => {
-  const { source: sourceFilepath, target: targetGlob, prettify } = options;
+  const {
+    source: sourceFilepath,
+    target: targetGlob,
+    prettifyCfg,
+    noPrettify,
+  } = options;
 
   const targetFiles = await fg([targetGlob]);
 
@@ -26,75 +30,110 @@ export default async (options) => {
   sourceFileHandle.close();
 
   let prettierConfig;
-  if (prettify !== false) {
+  if (!noPrettify) {
     prettierConfig = await prettier.resolveConfig(
-      prettify === true ? targetFiles[0] : prettify
+      prettifyCfg || targetFiles[0]
     );
   }
 
   for (const targetFile of targetFiles) {
-    const code = await fs.readFile(targetFile, "utf8");
-    const ast = parser.parse(code, {
-      sourceType: "module",
-      plugins: ["jsx", "classProperties"],
-    });
+    let ast;
+    try {
+      const code = await fs.readFile(targetFile, "utf8");
+      ast = parser.parse(code, {
+        sourceType: "module",
+        plugins: ["jsx", "classProperties"],
+      });
+    } catch (err) {
+      console.error(`Failed to parse or read file: ${targetFile}`, err);
+    }
 
     let writeChanges = false;
 
-    traverse(ast, {
-      JSXOpeningElement: (path) => {
-        if (t.isJSXIdentifier(path.node.name, { name: "FormattedMessage" })) {
-          const defaultMessageAttribute = getDefaultMessageJSXAttribute(path);
-          if (!defaultMessageAttribute) {
-            path.traverse({
-              JSXAttribute: (attributePath) => {
-                if (
-                  t.isJSXIdentifier(attributePath.node.name, { name: "id" })
-                ) {
-                  const defaultMessage =
-                    defaultMessages[attributePath.node.value.value] ||
-                    DEFAULT_DEFAULT_MESSAGE;
+    if (ast) {
+      try {
+        traverse(ast, {
+          JSXOpeningElement: (path) => {
+            if (
+              t.isJSXIdentifier(path.node.name, { name: "FormattedMessage" })
+            ) {
+              const defaultMessageAttribute = getDefaultMessageJSXAttribute(
+                path
+              );
 
-                  attributePath.insertAfter(
-                    t.jsxAttribute(
-                      t.jsxIdentifier("defaultMessage"),
-                      t.stringLiteral(defaultMessage)
-                    )
-                  );
+              if (!defaultMessageAttribute) {
+                path.traverse({
+                  JSXAttribute: (attributePath) => {
+                    if (attributePath.parentPath !== path) {
+                      return;
+                    }
 
-                  writeChanges = true;
-                }
-              },
-            });
-          }
-        }
-      },
-      CallExpression: (path) => {
-        if (isFormatMessageCall({ callee: path.node.callee })) {
-          writeChanges = insertDefaultMessageProperty({
-            path,
-            defaultMessages,
+                    if (
+                      t.isJSXIdentifier(attributePath.node.name, {
+                        name: "id",
+                      })
+                    ) {
+                      const defaultMessage =
+                        defaultMessages[attributePath.node.value.value];
+
+                      if (!defaultMessage) {
+                        return;
+                      }
+
+                      attributePath.insertAfter(
+                        t.jsxAttribute(
+                          t.jsxIdentifier("defaultMessage"),
+                          t.stringLiteral(defaultMessage)
+                        )
+                      );
+
+                      writeChanges = true;
+                    }
+                  },
+                });
+              }
+            }
+          },
+          CallExpression: (path) => {
+            if (isFormatMessageCall({ callee: path.node.callee })) {
+              writeChanges = insertDefaultMessageProperty({
+                path,
+                defaultMessages,
+              });
+            }
+          },
+        });
+      } catch (err) {
+        console.error(
+          `Something went wrong traversing the AST of ${targetFile}!`,
+          err
+        );
+      }
+    }
+
+    if (ast && writeChanges) {
+      try {
+        let { code: output } = generate(ast, {
+          retainLines: true,
+          retainFunctionParens: true,
+        });
+
+        if (!noPrettify) {
+          output = prettier.format(output, {
+            parser: "babel",
+            ...prettierConfig,
           });
         }
-      },
-    });
 
-    if (writeChanges) {
-      let { code: output } = generate(ast, {
-        retainLines: true,
-        retainFunctionParens: true,
-      });
+        await fs.writeFile(targetFile, output, "utf8");
 
-      if (prettify) {
-        output = prettier.format(output, {
-          parser: "babel",
-          ...prettierConfig,
-        });
+        console.log(targetFile, "done");
+      } catch (err) {
+        console.error(
+          `Something went wrong writing the output for ${targetFile}!`,
+          err
+        );
       }
-
-      await fs.writeFile(targetFile, output, "utf8");
-
-      console.log(targetFile, "done");
     }
   }
 };

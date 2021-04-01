@@ -1,12 +1,14 @@
 # intl-msgs-defaults
 
-# Installation
+Automatically applies `defaultMessage` prop and property for `formatMessage({ id: "...", })` and `<FormattedMessage id="..." />` calls from a source file.
+
+# Install
 
 ```js
 npm install --save-dev intl-msgs-defaults
 ```
 
-Automatically applies `defaultMessage` prop and property for `formatMessage({ id: "...", })` and `<FormattedMessage id="..." />` calls from a source file.
+# Introduction
 
 Consider this source code:
 
@@ -56,20 +58,21 @@ export const TestFunc = () => {
 };
 ```
 
-# Usage
+# Usage Options
 
 ```
 Usage: intl-msgs-defaults [options]
 
 Options:
-  -V, --version            output the version number
-  -s, --source <file>      .json file with the default messages
-  -t, --target <glob>      glob pattern for target files
-  -p, --prettify [config]  whether to prettify output, with optional config file (default: true)
-  -h, --help               display help for command
+  -V, --version                 output the version number
+  -s, --source <file>           .json file with the default messages
+  -t, --target <glob>           glob pattern for target files
+  -np, --no-prettify            do not prettify output
+  -pc, --prettify-cfg <config>  custom prettier config file (defaults to auto-resolve near target files)
+  -h, --help                    display help for command
 ```
 
 # Behaviour
 
-- When there already is a `defaultMessage` the message will not be overwritten
-- When no string for the ID is found in the source strings file, the string `@TODO` will be added
+- When there already is a `defaultMessage`, it will not be overwritten
+- When no data for the key is found in the source file, no `defaultMessage` is added
