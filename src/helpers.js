@@ -1,7 +1,5 @@
 import * as t from "@babel/types";
 
-export const DEFAULT_DEFAULT_MESSAGE = "@TODO";
-
 export const isFormatMessageCall = ({ callee }) => {
   return (
     callee.name === "formatMessage" ||
@@ -21,6 +19,10 @@ export const getDefaultMessageJSXAttribute = (path) => {
 export const insertDefaultMessageProperty = ({ path, defaultMessages }) => {
   const [firstArg] = path.get("arguments");
 
+  if (!firstArg?.node?.properties) {
+    return false;
+  }
+
   const defaultMessageProperty = firstArg.node.properties.find(
     (property) => property.key.name === "defaultMessage"
   );
@@ -30,8 +32,15 @@ export const insertDefaultMessageProperty = ({ path, defaultMessages }) => {
       (property) => property.key.name === "id"
     );
 
-    const defaultMessage =
-      defaultMessages[idProperty.value.value] || DEFAULT_DEFAULT_MESSAGE;
+    if (!idProperty?.value?.value) {
+      return false;
+    }
+
+    const defaultMessage = defaultMessages[idProperty.value.value];
+
+    if (!defaultMessage) {
+      return false;
+    }
 
     firstArg.pushContainer(
       "properties",

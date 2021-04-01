@@ -10,10 +10,10 @@ program.version(version);
 program
   .option("-s, --source <file>", ".json file with the default messages")
   .option("-t, --target <glob>", "glob pattern for target files")
+  .option("-np, --no-prettify", "do not prettify output", false)
   .option(
-    "-p, --prettify [config]",
-    "whether to prettify output, with optional config file",
-    true
+    "-pc, --prettify-cfg <config>",
+    "custom prettier config file (defaults to auto-resolve near target files)"
   );
 
 program.parse(process.argv);
