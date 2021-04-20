@@ -116,6 +116,7 @@ export default async (options) => {
         let { code: output } = generate(ast, {
           retainLines: true,
           retainFunctionParens: true,
+          jsescOption: { minimal: true },
         });
 
         if (!noPrettify) {
